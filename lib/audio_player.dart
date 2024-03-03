@@ -215,6 +215,7 @@ class AppAudioPlayer {
   Duration? get position => _audioPlayer.position;
   List<int>? get shuffleIndices => _audioPlayer.shuffleIndices;
   bool? get isShuffled => _audioPlayer.shuffleModeEnabled;
+  int? get currentIndex => _audioPlayer.currentIndex;
 
   Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
   Stream<int?> get playlistStream => _audioPlayer.currentIndexStream;
