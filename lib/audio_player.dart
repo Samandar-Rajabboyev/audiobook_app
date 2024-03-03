@@ -122,6 +122,7 @@ import 'package:audiobook_app/core/constants/app_constants.dart';
 import 'package:audiobook_app/core/service/prefs.dart';
 import 'package:audiobook_app/data/models/audiobook.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -193,11 +194,13 @@ class AppAudioPlayer {
     }
     await _audioPlayer.play();
 
-    _audioPlayer.currentIndexStream.listen((event) {
-      Prefs.setInt(AppConstants.kLastIndexKey, event ?? 0);
+    _audioPlayer.currentIndexStream.listen((event) async {
+      bool hasConnection = await InternetConnectionChecker().hasConnection;
+      if (hasConnection) Prefs.setInt(AppConstants.kLastIndexKey, event ?? 0);
     });
-    _audioPlayer.positionStream.listen((event) {
-      Prefs.setInt(AppConstants.kLastPositionOfAudioKey, event.inMilliseconds);
+    _audioPlayer.positionStream.listen((event) async {
+      bool hasConnection = await InternetConnectionChecker().hasConnection;
+      if (hasConnection) Prefs.setInt(AppConstants.kLastPositionOfAudioKey, event.inMilliseconds);
     });
   }
 

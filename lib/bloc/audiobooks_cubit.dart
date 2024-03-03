@@ -16,10 +16,16 @@ part 'audiobooks_state.dart';
 
 class AudiobooksCubit extends Cubit<AudiobooksState> {
   AudiobooksCubit() : super(AudiobooksState()) {
+    checkInternet();
     Connectivity().onConnectivityChanged.listen((event) async => await checkInternet());
   }
 
   init() async {
+    await Prefs.getStringList(AppConstants.kPlaylistOrderKey).then((value) {
+      if (value != null) {
+        audiobooks = [...(value.map((e) => audiobooks.firstWhere((element) => element.id == num.parse(e))))];
+      }
+    });
     await Prefs.getStringList(AppConstants.kDownloadedFilePathsKey).then((value) {
       if (value != null) {
         for (var i in value) {
@@ -59,7 +65,7 @@ class AudiobooksCubit extends Cubit<AudiobooksState> {
             ...state.progresses.where((element) => element.id != filename),
           ],
         ));
-      }).then((value) {
+      }).then((value) async {
         emit(
           state.copyWith(
             progresses: [
@@ -68,7 +74,16 @@ class AudiobooksCubit extends Cubit<AudiobooksState> {
             ],
           ),
         );
-        AppAudioPlayer().init();
+        await Prefs.getStringList(AppConstants.kDownloadedFilePathsKey).then((value) {
+          if (value != null) {
+            for (var i in value) {
+              Map<String, dynamic> data = json.decode(i);
+              audiobooks.firstWhereOrNull((element) => element.title == data['id'])?.localPath = data['path'];
+            }
+          }
+        });
+        AppAudioPlayer audioPlayer = AppAudioPlayer();
+        audioPlayer.init(initialIndex: audioPlayer.currentIndex, initialPosition: audioPlayer.position);
       });
     } catch (e) {
       log("#error2: $e");
